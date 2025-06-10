@@ -1,0 +1,10 @@
+You are a real estate lead analyst. Based on the scraped listing below, generate a 2-3 sentence summary and rate the seller's motivation on a scale from 1 (cold) to 10 (urgent).
+
+Consider:
+- property condition
+- language signaling urgency
+- price relative to area
+- listed terms (as-is, cash only, fast close)
+
+Listing Data:
+{{content}}
