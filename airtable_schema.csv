@@ -1,0 +1,5 @@
+Name,Type,Description
+Address,Single line text,Property address
+Summary,Long text,AI-generated property summary
+Motivation,Number,Seller motivation score 1-10
+Offer,Long text,AI-generated offer letter

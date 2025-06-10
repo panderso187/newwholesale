@@ -1,0 +1,4 @@
+You are a real estate acquisitions agent. Using the property summary provided below, draft a concise cash offer letter that highlights a quick closing timeline and as-is purchase. Keep it professional and under 150 words.
+
+Summary:
+{{summary}}

@@ -1,0 +1,115 @@
+{
+  "name": "Firecrawl-Airtable Lead Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "sheetId": "your_google_sheet_id",
+        "range": "Leads!A1:D1",
+        "valueRenderOption": "FORMATTED_VALUE",
+        "dateTimeRenderOption": "FORMATTED_STRING"
+      },
+      "name": "New Google Sheet Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.firecrawl.dev/scrape",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"url\": \"={{$json[\"property_url\"]}}\"}"
+      },
+      "name": "Firecrawl Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const openai = require('openai');\nconst response = await openai.createChatCompletion({\n  model: 'gpt-4',\n  messages: [{ role: 'user', content: `Summarize this property and score seller motivation (1-10) based on the details: ${$json[\"content\"]}` }]\n});\nreturn [{json: { summary: response.data.choices[0].message.content }}];"
+      },
+      "name": "GPT Summary",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const openai = require('openai');\nconst response = await openai.createChatCompletion({\n  model: 'gpt-4',\n  messages: [{ role: 'user', content: `Draft a short cash offer letter for this property:\n${$json[\"summary\"]}` }]\n});\nreturn [{json: { offer: response.data.choices[0].message.content }}];"
+      },
+      "name": "GPT Offer Draft",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "application": "appXXXXXXXXXXXXXX",
+        "table": "Leads",
+        "fields": {
+          "fieldsUi": {
+            "fieldValues": [
+              {"fieldId": "Address", "fieldValue": "={{$json[\"address\"]}}"},
+              {"fieldId": "Summary", "fieldValue": "={{$json[\"summary\"]}}"},
+              {"fieldId": "Motivation", "fieldValue": "={{$json[\"motivation\"]}}"},
+              {"fieldId": "Offer", "fieldValue": "={{$json[\"offer\"]}}"}
+            ]
+          }
+        }
+      },
+      "name": "Airtable Append",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [1000, 300]
+    }
+  ],
+  "connections": {
+    "New Google Sheet Row": {
+      "main": [
+        [
+          {
+            "node": "Firecrawl Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Scrape": {
+      "main": [
+        [
+          {
+            "node": "GPT Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Summary": {
+      "main": [
+        [
+          {
+            "node": "GPT Offer Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Offer Draft": {
+      "main": [
+        [
+          {
+            "node": "Airtable Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
