@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Prop Enrich</title>
+</head>
+<body class="min-h-screen bg-gray-100 flex items-center justify-center">
+  <form id="upload-form" class="bg-white p-6 rounded shadow" enctype="multipart/form-data">
+    <h1 class="text-xl mb-4">Upload Propwire CSV</h1>
+    <input type="file" name="csv_file" class="mb-4" accept=".csv" required>
+    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Enrich</button>
+  </form>
+  <script>
+    const form = document.getElementById('upload-form');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const res = await fetch('/enrich', { method: 'POST', body: fd });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'enriched.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+  </script>
+</body>
+</html>
